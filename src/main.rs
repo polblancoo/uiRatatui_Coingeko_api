@@ -91,13 +91,13 @@ use api_call::plot_prices;
  let res = run_app(&mut terminal, &result.unwrap());
 
  // Restaurar terminal
- disable_raw_mode()?;
- execute!(
-     terminal.backend_mut(),
-     LeaveAlternateScreen,
-     DisableMouseCapture
- )?;
- terminal.show_cursor()?;
+ //disable_raw_mode()?;
+ //execute!(
+ //    terminal.backend_mut(),
+ //    LeaveAlternateScreen,
+  //   DisableMouseCapture
+ //)?;
+ //terminal.show_cursor()?;
 
  if let Err(err) = res {
      println!("{:?}", err)
@@ -106,54 +106,80 @@ use api_call::plot_prices;
  Ok(())
 }
 
-  fn run_app<B: ratatui::backend::Backend>(terminal: &mut Terminal<B>, initial_coins: &Vec<Coin>) -> io::Result<()> {
- 
-  let mut coins = Vec::new();
-  coins = initial_coins.clone();
- 
-  let mut selected_index = 0;
 
-  
-  loop {
-    terminal.draw(|f: &mut ratatui::Frame| {
-        ui::draw::<B>(f, &coins, selected_index);
+  fn run_app<B>(terminal: &mut Terminal<B>, initial_coins: &Vec<Coin>) -> io::Result<()> 
+where
+    B: ratatui::backend::Backend + std::io::Write, // Add this constraint
+{
+    
+    let mut coins = initial_coins.clone();
+    let mut selected_index = 0;
+    let mut running = true; // Variable para controlar el bucle
 
-        // Mueve la lógica de eventos aquí para tener acceso a 'f'
+    // Renderizar la interfaz completa inicialmente
+    terminal.draw(|f| {
+        ui::draw::<B>(f, &coins, selected_index); // Renderizar todos los tokens
+        ui::draw::<B>(f, &coins, selected_index); // Renderizar detalles
+        ui::draw::<B>(f, &coins, selected_index); // Renderizar gráfico
+        ui::draw::<B>(f, &coins, selected_index); // Renderizar atajos
+    })?;
+// Habilitar captura de eventos
+//enable_raw_mode()?;
+//execute!(terminal.backend_mut(), EnterAlternateScreen, EnableMouseCapture)?;
+coins = initial_coins.clone();
+    while running {
         if let Ok(Event::Key(key)) = event::read() {
             match key.code {
-                KeyCode::Char('q') => return (),
+                KeyCode::Char('q') => {
+                    running = false; // Cambiar la variable a false para salir del bucle
+                },
                 KeyCode::Char('r') => {
-                    // Actualizar los datos cuando se presiona 'r'
-                    coins = initial_coins.clone();
+                    coins = initial_coins.clone(); // Reiniciar la lista de monedas
+                    terminal.draw(|f| {
+                        ui::draw::<B>(f, &coins, selected_index); // Renderizar todos los tokens
+                    })?;
                 },
                 KeyCode::Up => {
-                    // Mover selección hacia arriba
                     if selected_index > 0 {
                         selected_index -= 1;
                     }
+                    terminal.draw(|f| {
+                      ui::draw::<B>(f, &coins, selected_index); // Renderizar todos los tokens
+                  })?;
                 },
                 KeyCode::Down => {
-                    // Mover selección hacia abajo
                     if selected_index < coins.len() - 1 {
                         selected_index += 1;
                     }
+                    terminal.draw(|f| {
+                      ui::draw::<B>(f, &coins, selected_index); // Renderizar todos los tokens
+                  })?;
                 },
                 KeyCode::Char('d') => {
-                    // Llamar a render_token_details al presionar 'd'
                     if let Some(selected_coin) = coins.get(selected_index) {
-                        let right_chunks = Layout::default()
-                            .direction(Direction::Horizontal)
-                            .constraints([Constraint::Percentage(70), Constraint::Percentage(30)].as_ref())
-                            .split(f.size());
-
-                        render_token_details::<B>(f, selected_coin, right_chunks[1]); // Ahora 'f' es accesible
+                        terminal.draw(|f| {
+                            ui::draw::<B>(f, &coins, selected_index); // Renderizar detalles del token seleccionado
+                        })?;
                     }
                 },
                 _ => {}
             }
         }
-    })?;
-}
+     
+
+
+        std::thread::sleep(std::time::Duration::from_millis(50));
+    }
+// ... existing code ...
+// Restaurar terminal:. Deshabilita el modo crudo y restaura la pantalla alterna.
+disable_raw_mode()?; // Asegúrate de deshabilitar el modo crudo
+execute!(
+    terminal.backend_mut(),
+    LeaveAlternateScreen,
+    DisableMouseCapture
+)?; // Restaurar la pantalla y deshabilitar la captura de mouse
+terminal.show_cursor()?;
+    Ok(()) // Retornar Ok al finalizar
 }
  //--------------------fin ui--------------
 

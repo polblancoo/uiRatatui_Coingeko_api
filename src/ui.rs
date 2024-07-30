@@ -7,8 +7,11 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem,Paragraph, Wrap},
     Frame,
 };
+use ratatui::prelude::*;
+ use ratatui::text::{Line as RatatuiLine,};
 
 use ratatui::text::Text;
+use tabled::style::Line;
 use crate::api_call::Coin;
 
 pub fn draw<B: Backend>(f: &mut Frame, coins: &[Coin], selected_index: usize ) {
@@ -16,8 +19,8 @@ pub fn draw<B: Backend>(f: &mut Frame, coins: &[Coin], selected_index: usize ) {
     let main_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(50),
-            Constraint::Percentage(50),
+            Constraint::Percentage(30),
+            Constraint::Percentage(70),
         ])
         .split(f.size());
 
@@ -59,7 +62,44 @@ pub fn draw<B: Backend>(f: &mut Frame, coins: &[Coin], selected_index: usize ) {
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Green));
     f.render_widget(graph_block, right_chunks[1]);
+
+// Frame 4: Atajos de teclado (abajo)
+let shortcuts_block = Block::default()
+    .title("Shortcuts")
+    .borders(Borders::ALL)
+    .border_style(Style::default().fg(Color::Yellow));
+
+f.render_widget(shortcuts_block, Rect::new(0, f.size().height - 3, f.size().width, 3));
+
+// Contenido de los atajos de teclado
+let shortcuts_text = vec![
+    Span::styled(" 'q' to quit", Style::default().fg(Color::Red)).add_modifier(Modifier::BOLD),
+    Span::styled(" 'r' to reset", Style::default().fg(Color::White)).add_modifier(Modifier::BOLD),
+    Span::styled("Use ⬆️⬇️", Style::default().fg(Color::White)).add_modifier(Modifier::BOLD),
+    Span::styled("Press 'd' for details", Style::default().fg(Color::White)).add_modifier(Modifier::BOLD),
+];
+
+// Crear un layout para los atajos de teclado en una fila
+let shortcuts_chunks = Layout::default()
+    .direction(Direction::Horizontal)
+    .constraints(vec![Constraint::Percentage(5); shortcuts_text.len()]) // Dividir en columnas
+    .split(Rect::new(0, f.size().height - 3, f.size().width, 3));
+
+// Renderizar cada atajo en su propio frame
+for (i, shortcut) in shortcuts_text.iter().enumerate() {
+    let shortcut_block = Block::default()
+        .title(shortcut.content.to_string())
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::White));
+       // .style(Style::default().bg(Color::White));
+    f.render_widget(shortcut_block, shortcuts_chunks[i]);
 }
+
+
+}
+
+
+
 
  fn render_tokens_list(coins: &[Coin], selected_index: usize) -> List<'static> {
     let tokens_list: Vec<ListItem> = coins
