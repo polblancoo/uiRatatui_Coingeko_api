@@ -19,6 +19,6 @@ Otra forma :
 ``` bash
        binario $(cat consulta.txt)
 ```
-  #valores es el listado de token separados por ','
-  #ejecuta el comando para no reescribir los tokens
+
+  
 <hr style="color: 30056b2;"/>
