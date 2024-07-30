@@ -1,0 +1,26 @@
+[package]
+name = "Coingeko_API"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+#Captura de errores
+#color-eyre = "0.6.3"
+#tracing = "0.1.40"
+
+
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.12.5", features = ["blocking", "json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+colored = "2.0"
+dotenv = "0.15.0"
+#prettytable = "0.10.0"
+tabled = "0.4" 
+ansi_term = "0.12"
+#grafica en terminal
+textplots = "0.8"
+#ratatui
+ratatui = "0.27.0"
+crossterm = "0.27"
+

@@ -1,0 +1,2 @@
+polkadot , bitcoin , cardano , binance , tron  , sui ,  uniswap , polygon , aptos , mantle 
+
